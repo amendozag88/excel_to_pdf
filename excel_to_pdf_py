@@ -1,0 +1,52 @@
+import pandas as pd
+import pdfkit
+
+
+def convert_excel_to_pdf(excel_file, sheet_name, output_pdf):
+    # Read the Excel file (specify sheet name or leave blank for the first sheet)
+    df = pd.read_excel(excel_file, header=1, sheet_name=sheet_name)
+
+    # Convert the DataFrame to HTML, assign NaN values to empty strings
+    df.fillna('', inplace=True) 
+
+    #Specify column width for the first column of the html file
+    column_width_1st_col = 500
+    column_width = 80
+    #Title is the filename before the dot
+    title = excel_file.split('.')[0]
+    title_for_html = title.split('/')[-1]
+
+    # Create the HTML file
+    html = f'<html><head><style>table, th, td {{border: 1px solid black; border-collapse: collapse;}} th, td {{padding: 5px; text-align: left;}} th {{background-color: #f2f2f2;}} th:first-child, td:first-child {{width: {column_width_1st_col}px;}} td {{width: {column_width}px;}}</style></head><body>'
+    # Add a title to the html file, from the file name concatenated with the string title
+    html += f'<h1>{title_for_html}</h1>'
+    html += df.to_html(index=False)
+    html += '</body></html>'
+
+    #Save the html file
+    with open(f'{title}.html', 'w') as f:
+        f.write(html)
+    print(f'HTML saved as {title}.html')
+
+
+    # Convert HTML to PDF
+    output_pdf = f'{title}.pdf'
+    pdfkit.from_file( f'{title}.html', output_pdf)
+    print(f'PDF saved as {output_pdf}')
+
+#To test
+# excel_file = 'Test_Project_1_Evaluation.xlsx'
+# sheet_name = 'Sheet1'  # Replace with your sheet name
+# output_pdf = 'Test_Project_1_Evaluation.pdf'
+# convert_excel_to_pdf(excel_file, sheet_name, output_pdf)
+
+
+#Iterate through the contents of the folder Excel_Files
+import os
+for file in os.listdir('Excel_Files'):
+    if file.endswith('.xlsx'):
+        excel_file = f'Excel_Files/{file}'
+        sheet_name = 'Sheet1'  
+        output_pdf = f'{file.split(".")[0]}.pdf'
+        convert_excel_to_pdf(excel_file, sheet_name, output_pdf)
+        print(f'Converted {file} to PDF')
